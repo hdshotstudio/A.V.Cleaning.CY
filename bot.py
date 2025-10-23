@@ -2,7 +2,6 @@
 import os
 import asyncio
 import logging
-import aiohttp
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
@@ -56,16 +55,6 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Спасибо! Мы получили ваше сообщение. Напишите /start, чтобы открыть меню.", reply_markup=kb)
 
-async def keep_alive():
-    url = os.getenv("RENDER_PING_URL") or "https://av-cleaning-bot.onrender.com"
-    while True:
-        try:
-            async with aiohttp.ClientSession() as s:
-                await s.get(url, timeout=10)
-            log.info("🌀 Keep-alive ping sent")
-        except Exception as e:
-            log.warning(f"Keep-alive failed: {e}")
-        await asyncio.sleep(600)
 
 async def main():
     if not BOT_TOKEN:
@@ -74,9 +63,9 @@ async def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_menu))
 
-    asyncio.create_task(keep_alive())
     log.info("🚀 Бот запущен и готов к работе!")
-    await app.run_polling(close_loop=False)
+    # Запускаем бота
+    await app.run_polling()
 
 if __name__ == "__main__":
     asyncio.run(main())
